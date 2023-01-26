@@ -3,6 +3,7 @@
 #include "../include/constants.h"
 #include "../include/units.h"
 #include "../include/fuel.h"
+#include "../include/piston_engine_simulator.h"
 
 #include <cmath>
 #include <assert.h>
@@ -26,6 +27,9 @@ Engine::Engine() {
     m_exhaustSystemCount = 0;
     m_starterSpeed = 0;
     m_starterTorque = 0;
+    m_dynoMinSpeed = 0;
+    m_dynoMaxSpeed = 0;
+    m_dynoHoldStep = 0;
     m_redline = 0;
 
     m_throttle = nullptr;
@@ -49,15 +53,18 @@ Engine::~Engine() {
 }
 
 void Engine::initialize(const Parameters &params) {
-    m_crankshaftCount = params.CrankshaftCount;
-    m_cylinderCount = params.CylinderCount;
-    m_cylinderBankCount = params.CylinderBanks;
-    m_exhaustSystemCount = params.ExhaustSystemCount;
-    m_intakeCount = params.IntakeCount;
-    m_starterTorque = params.StarterTorque;
-    m_starterSpeed = params.StarterSpeed;
-    m_redline = params.Redline;
-    m_name = params.Name;
+    m_crankshaftCount = params.crankshaftCount;
+    m_cylinderCount = params.cylinderCount;
+    m_cylinderBankCount = params.cylinderBanks;
+    m_exhaustSystemCount = params.exhaustSystemCount;
+    m_intakeCount = params.intakeCount;
+    m_starterTorque = params.starterTorque;
+    m_starterSpeed = params.starterSpeed;
+    m_dynoMinSpeed = params.dynoMinSpeed;
+    m_dynoMaxSpeed = params.dynoMaxSpeed;
+    m_dynoHoldStep = params.dynoHoldStep;
+    m_redline = params.redline;
+    m_name = params.name;
     m_throttle = params.throttle;
     m_initialHighFrequencyGain = params.initialHighFrequencyGain;
     m_initialSimulationFrequency = params.initialSimulationFrequency;
@@ -373,6 +380,18 @@ int Engine::getMaxDepth() const {
     }
 
     return maxDepth;
+}
+
+Simulator *Engine::createSimulator(Vehicle *vehicle, Transmission *transmission) {
+    PistonEngineSimulator *simulator = new PistonEngineSimulator;
+    Simulator::Parameters simulatorParams;
+    simulatorParams.systemType = Simulator::SystemType::NsvOptimized;
+    simulator->initialize(simulatorParams);
+
+    simulator->loadSimulation(this, vehicle, transmission);
+    simulator->setFluidSimulationSteps(8);
+
+    return static_cast<Simulator *>(simulator);
 }
 
 double Engine::getRpm() const {

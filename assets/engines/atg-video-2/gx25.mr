@@ -1,0 +1,188 @@
+import "engine_sim.mr"
+
+units units()
+constants constants()
+impulse_response_library ir_lib()
+
+private node wires {
+    output wire1: ignition_wire();
+}
+
+public node gx25 {
+    alias output __out: engine;
+
+    engine engine(
+        name: "Honda GX25 'Leaf-Blower'",
+        starter_torque: 200 * units.lb_ft,
+        starter_speed: 1500 * units.rpm,
+        //redline: 5800 * units.rpm,
+        redline: 10000 * units.rpm,
+        fuel: fuel(
+            max_turbulence_effect: 0.0,
+            burning_efficiency_randomness: 0.0,
+            max_burning_efficiency: 2.0
+            //max_burning_efficiency: 1.1
+        )
+    )
+
+    wires wires()
+
+    crankshaft c0(
+        throw: 33 * units.mm / 2,
+        //flywheel_mass: 5 * units.lb,
+        flywheel_mass: 500 * units.g,
+        //mass: 5 * units.lb,
+        mass: 200 * units.g,
+        //friction_torque: 0.0 * units.lb_ft,
+        friction_torque: 0.001 * units.Nm,
+        moment_of_inertia: 0.03986844776863666 * 0.1,
+        //moment_of_inertia: 0.03986844776863666 * 0.01,
+        position_x: 0.0,
+        position_y: 0.0,
+        tdc: constants.pi / 2
+    )
+
+    rod_journal rj0(angle: 0.0)
+    c0
+        .add_rod_journal(rj0)
+
+    piston_parameters piston_params(
+        //mass: 200 * units.g,
+        mass: 70 * units.g,
+        //blowby: k_28inH2O(0.1),
+        //compression_height: 1.0 * units.inch,
+        compression_height: 15 * units.mm,
+        wrist_pin_position: 0.0,
+        displacement: 0.0
+    )
+
+    connecting_rod_parameters cr_params(
+        //mass: 300.0 * units.g,
+        mass: 200.0 * units.g,
+        moment_of_inertia: 0.0015884918028487504,
+        center_of_mass: 0.0,
+        //length: 1.7 * units.inch
+        length: 50 * units.mm
+    )
+
+    cylinder_bank_parameters bank_params(
+        bore: 31 * units.mm,
+        deck_height: 90 * units.mm / 1
+    )
+
+    intake intake(
+        //plenum_volume: 1.0 * units.L,
+        plenum_volume: 0.05 * units.L,
+        //plenum_cross_section_area: 20.0 * units.cm2,
+        plenum_cross_section_area: 10.0 * units.cm2,
+        intake_flow_rate: k_carb(1500.0),
+        idle_flow_rate: k_carb(0.0),
+        idle_throttle_plate_position: 0.999915,
+        //throttle_gamma: 7.0
+        throttle_gamma: 1.0
+    )
+
+    exhaust_system_parameters es_params(
+        outlet_flow_rate: k_carb(1000.0),
+        //primary_tube_length: 10.0 * units.inch,
+        primary_tube_length: 10.0 * units.mm,
+        primary_flow_rate: k_carb(50.0),
+        velocity_decay: 1.0,
+        volume: 0.5 * units.L
+    )
+
+    exhaust_system exhaust0(
+        es_params,
+        audio_volume: 1.0,
+        impulse_response: ir_lib.default_0
+    )
+
+    cylinder_bank b0(bank_params, angle: 0 * units.deg)
+    b0
+        .add_cylinder(
+            piston: piston(piston_params, blowby: k_28inH2O(0.1)),
+            connecting_rod: connecting_rod(cr_params),
+            rod_journal: rj0,
+            intake: intake,
+            exhaust_system: exhaust0,
+            ignition_wire: wires.wire1
+        )
+
+    engine
+        .add_cylinder_bank(b0)
+
+    engine.add_crankshaft(c0)
+
+    harmonic_cam_lobe lobe(
+        duration_at_50_thou: 160 * units.deg,
+        gamma: 1.1,
+        //lift: 150 * units.thou,
+        lift: 5.0 * units.mm,
+        steps: 200
+    )
+
+    vtwin90_camshaft_builder camshaft(
+        lobe_profile: lobe,
+        lobe_separation: 114 * units.deg,
+        base_radius: 400 * units.thou
+    )
+
+    b0.set_cylinder_head (
+        generic_small_engine_head(
+            chamber_volume: 0 * units.cc,
+            intake_camshaft: camshaft.intake_cam_0,
+            exhaust_camshaft: camshaft.exhaust_cam_0
+        )
+    )
+
+    function timing_curve(1000 * units.rpm)
+    timing_curve
+        .add_sample(0000 * units.rpm, 50 * units.deg)
+        .add_sample(1000 * units.rpm, 50 * units.deg)
+        .add_sample(2000 * units.rpm, 50 * units.deg)
+        .add_sample(3000 * units.rpm, 50 * units.deg)
+        .add_sample(4000 * units.rpm, 50 * units.deg)
+
+    ignition_module ignition_module(
+        timing_curve: timing_curve,
+	rev_limit: 14000 * units.rpm,
+	limiter_duration: 0.16)
+    ignition_module
+        .connect_wire(wires.wire1, 0)
+    engine.add_ignition_module(ignition_module)
+}
+
+label car_mass(2 * units.lb) 
+ 
+private node impreza { 
+    alias output __out: 
+        vehicle( 
+            mass: 2700 * units.lb, 
+            drag_coefficient: 0.3,
+            cross_sectional_area: (72 * units.inch) * (56 * units.inch),
+            diff_ratio: 3.9,
+            tire_radius: 10 * units.inch,
+            rolling_resistance: 0.015 * car_mass * 9.81
+        );
+}
+
+private node impreza_transmission {
+    alias output __out:
+        transmission(
+            max_clutch_torque: 300 * units.lb_ft
+        )
+        .add_gear(3.636)
+        .add_gear(2.375)
+        .add_gear(1.761)
+        .add_gear(1.346)
+        .add_gear(0.971)
+        .add_gear(0.756);
+}
+
+
+public node main {
+    set_engine(gx25())
+    set_vehicle(impreza())
+    set_transmission(impreza_transmission())
+}
+

@@ -172,7 +172,8 @@ public node ferrari_412_t2_v12 {
         hf_gain: 0.01,
         noise: 1.0,
         jitter: 0.1,
-        simulation_frequency: 5000
+        //simulation_frequency: 5000
+        simulation_frequency: 4000
     )
 
     wires wires()

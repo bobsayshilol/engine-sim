@@ -1,0 +1,77 @@
+import "engine_sim.mr"
+
+units units()
+constants constants()
+impulse_response_library ir_lib()
+
+label cycle(3 * 360 * units.deg)
+label sparkadvance(40 * units.deg)
+
+private node wires {
+    output wire1: ignition_wire();
+    output wire2: ignition_wire();
+    output wire3: ignition_wire();
+    output wire4: ignition_wire();
+    output wire5: ignition_wire();
+    output wire6: ignition_wire();
+}
+
+private node rx7_40b {
+    alias output __out: engine;
+
+    wankel_engine engine(
+        name: "2JB (6 Rotor 2JZ Crank)",
+	starter_torque: 180 * units.lb_ft,
+	starter_speed: 280 * units.rpm,
+	redline: 10000 * units.rpm,
+	fuel: fuel(
+	    max_burning_efficiency: 0.9,
+	    max_dilution_effect: 1.5,
+	    burning_efficiency_randomness: 1.0
+	),
+	throttle_gamma: 1.5,
+	hf_gain: 0.0038,
+	noise: 1.0,
+	jitter: 0.8,
+	simulation_frequency: 7000,
+	rotor_calculation_quality: 2048,
+	rotor_housing_resolution: 2048
+    )
+
+    wires wires()
+
+    label store(3 * units.cm)
+    label radius(10.5 * units.cm)
+    label depth(8 * units.cm)
+
+    label intake_port_size(24 * units.deg)
+    label intake_port_angle(136 * units.deg)
+
+    label exhaust_port_size(28 * units.deg)
+    label exhaust_port_angle(212 * units.deg)
+
+    label spark_angle(30 * units.deg)
+
+    label rotor_mass(4327 * units.g)
+    label rotor_I(disk_moment_of_inertia(mass: rotor_mass, radius: radius))
+
+    label intake_port_start(intake_port_angle)
+    label intake_port_end(intake_port_angle + intake_port_size)
+    label exhaust_port_start(exhaust_port_angle)
+    label exhaust_port_end(exhaust_port_angle + exhaust_port_size)
+
+    label carbCFM(140.0)
+    label idleCFM(0.06)
+    label idleTP(0.9999)
+
+    crankshaft c0(
+        throw: 0.5 * stroke,
+	flywheel_mass: 5 * units.lb,
+	mass: 5 * units.lb,
+	friction_torque: 15.0 * units.lb_ft,
+	moment_of_inertia: 0.22986844776863666 * 0.5,
+	position_x: 0.0,
+	position_y: 0.0,
+	tdc: 0.0
+    )
+}

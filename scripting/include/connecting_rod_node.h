@@ -41,25 +41,25 @@ namespace es_script {
         {
             ConnectingRod::Parameters params = m_parameters;
             params.crankshaft = crankshaft;
-            params.Journal = rodJournal;
+            params.journal = rodJournal;
             params.piston = piston;
-            params.RodJournals = static_cast<int>(m_rodJournals.size());
-            params.Master = nullptr;
+            params.rodJournals = static_cast<int>(m_rodJournals.size());
+            params.master = nullptr;
 
             connectingRod->initialize(params);
 
-            for (int i = 0; i < params.RodJournals; ++i) {
+            for (int i = 0; i < params.rodJournals; ++i) {
                 connectingRod->setRodJournalAngle(i, m_rodJournals[i]->getAngle() + constants::pi / 2);
             }
         }
 
     protected:
         virtual void registerInputs() {
-            addInput("mass", &m_parameters.Mass);
-            addInput("moment_of_inertia", &m_parameters.MomentOfInertia);
-            addInput("center_of_mass", &m_parameters.CenterOfMass);
-            addInput("length", &m_parameters.Length);
-            addInput("slave_throw", &m_parameters.SlaveThrow);
+            addInput("mass", &m_parameters.mass);
+            addInput("moment_of_inertia", &m_parameters.momentOfInertia);
+            addInput("center_of_mass", &m_parameters.centerOfMass);
+            addInput("length", &m_parameters.length);
+            addInput("slave_throw", &m_parameters.slaveThrow);
 
             ObjectReferenceNode<ConnectingRodNode>::registerInputs();
         }

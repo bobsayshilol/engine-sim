@@ -82,6 +82,7 @@ add_library(engine-sim STATIC
     src/low_pass_filter.cpp
     src/part.cpp
     src/piston.cpp
+    src/piston_engine_simulator.cpp
     src/simulator.cpp
     src/standard_valvetrain.cpp
     src/starter_motor.cpp
@@ -125,6 +126,7 @@ add_library(engine-sim STATIC
     include/low_pass_filter.h
     include/part.h
     include/piston.h
+    include/piston_engine_simulator.h
     include/simulator.h
     include/standard_valvetrain.h
     include/starter_motor.h

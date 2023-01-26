@@ -157,7 +157,8 @@ public node f136_v8 {
         hf_gain: 0.01,
         noise: 1.0,
         jitter: 0.15,
-        simulation_frequency: 10000
+        //simulation_frequency: 10000
+        simulation_frequency: 5000
     )
 
     wires wires()

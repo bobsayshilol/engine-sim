@@ -21,10 +21,16 @@ namespace units {
     static constexpr double mm = m / 1000.0;
     static constexpr double km = m * 1000.0;
 
+    /*
+    extern constexpr double inch = cm * 2.54;
+    extern constexpr double foot = inch * 12.0;
+    extern constexpr double thou = inch / 1000.0;
+    extern constexpr double mile = m * 1609.344;
+    */
+
     static constexpr double inch = cm * 2.54;
     static constexpr double foot = inch * 12.0;
     static constexpr double thou = inch / 1000.0;
-
     static constexpr double mile = m * 1609.344;
 
     // Time
